@@ -1,0 +1,193 @@
+%% 1. Get the data
+data = later_getData([], [], 0.2);
+RTs = data{1};
+clear data
+
+%% 2. Define the objective function (can't find RTs) 
+% Define the real data (Subject ID, Hazards, Stimulus) and corresponding reaction times (RTs)
+% Assuming reaction times are hypothetical, you can replace these with actual values if available
+data = struct(...
+    'Subject', {'BD', 'BD', 'BD', 'DL', 'DL', 'DL', 'JP2', 'JP2', 'JP2', ...
+                'RO2', 'RO2', 'RO2', 'WT', 'LB', 'MA', 'MM', 'ME', 'ME', ...
+                'GP', 'GP', 'AG', 'AG', 'LB', 'LB', 'PV', 'PV', 'MA', 'FT', ...
+                'VQ', 'OJ', 'JU', 'AB', 'AN', 'JM', 'JT', 'NB', 'EY', 'SK', ...
+                'Five', 'Six', 'CC', 'AR', 'KK', 'CC', 'AR', 'KK', 'BO', ...
+                'EM', 'ET', 'MH', 'MS', 'KA', 'MX', 'JC', 'WZ', 'AJ', 'BL', ...
+                'BO', 'ET', 'MS', 'KA', 'MX', 'JC', 'WZ', 'AJ', 'BL', 'MH', ...
+                'JL', 'LK', 'JL', 'LK'}, ...
+    'Hazards', {[0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.25, 0.25], [0.25, 0.25], [0.25, 0.25], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.25, 0.25], [0.25, 0.25], ...
+                [0.25, 0.25], [0.25, 0.25], [0.35, 0.15], [0.35, 0.15], [0.35, 0.15], ...
+                [0.35, 0.15], [0.65, 0.85], [0.65, 0.85], [0.65, 0.85], [0.65, 0.85], ...
+                [0.65, 0.85], [0.65, 0.85], [0.65, 0.85], [0.35, 0.15], [0.35, 0.15], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], ...
+                [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2], [0.2, 0.2]}, ...
+    'Stimulus', {'SF', 'WF', 'WNF', 'SF', 'WF', 'WNF', 'SNF', 'WF', 'WNF', ...
+                 'SNF', 'WF', 'WNF', 'SF', 'SF', 'SF', 'SF', 'WF', 'WNF', ...
+                 'WF', 'WNF', 'WF', 'WNF', 'WF', 'WNF', 'WF', 'WNF', 'WNF', ...
+                 'SF', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF', 'SF', ...
+                 'SF', 'SF', 'WF', 'WF', 'WF', 'WNF', 'WNF', 'WNF', 'WNF', ...
+                 'WNF', 'WNF', 'WNF', 'WNF', 'WNF', 'WNF', 'WNF', 'WNF', 'WNF', ...
+                 'WWF', 'WWF', 'WWF', 'WWF', 'WWF', 'WWF', 'WWF', 'WWF', 'WWF', ...
+                 'WWF', 'WNF', 'WNF', 'WWF', 'WWF'} ...
+);
+
+% Example reaction times (RTs) corresponding to the data. Replace these with actual RT values.
+RTs = [0.4, 0.5, 0.55, 0.35, 0.45, 0.6, 0.4, 0.5, 0.55, ...
+       0.42, 0.5, 0.52, 0.33, 0.35, 0.37, 0.39, 0.43, 0.55, ...
+       0.49, 0.57, 0.61, 0.53, 0.51, 0.59, 0.6, 0.62, 0.4, ...
+       0.45, 0.43, 0.48, 0.46, 0.49, 0.47, 0.5, 0.48, 0.5, ...
+       0.47, 0.5, 0.54, 0.55, 0.57, 0.56, 0.6, 0.63, 0.62, ...
+       0.61, 0.55, 0.59, 0.58, 0.65, 0.67, 0.7, 0.72, 0.71, ...
+       0.7, 0.74, 0.75, 0.76, 0.77, 0.65, 0.66, 0.7, 0.74, ...
+       0.68, 0.72, 0.77, 0.75, 0.8, 0.78, 0.76, 0.8];
+
+% Define the objective function as an anonymous function
+laterErrFcn = @(fits) -sum(log(normpdf(RTs, fits(1), fits(2))));
+
+% 'fits(1)' is muR (mean rate of accumulation)
+% 'fits(2)' is deltaS (standard deviation of the accumulation rate)
+
+% Example usage:
+% To minimize this function and find the best-fitting parameters, you can use 
+% MATLAB's fminsearch or another optimization routine.
+
+initial_guess = [0.5, 0.1]; % Initial guess for [muR, deltaS]
+optimal_fits = fminsearch(laterErrFcn, initial_guess);
+
+disp('Optimal fits:');
+disp(optimal_fits);
+
+
+%% 3. Define the initial conditions
+
+% Define the real data (Subject ID, Hazards, Stimulus) and corresponding reaction times (RTs)
+% Replace these with actual RT values
+RTs = [0.4, 0.5, 0.55, 0.35, 0.45, 0.6, 0.4, 0.5, 0.55, ...
+       0.42, 0.5, 0.52, 0.33, 0.35, 0.37, 0.39, 0.43, 0.55, ...
+       0.49, 0.57, 0.61, 0.53, 0.51, 0.59, 0.6, 0.62, 0.4, ...
+       0.45, 0.43, 0.48, 0.46, 0.49, 0.47, 0.5, 0.48, 0.5, ...
+       0.47, 0.5, 0.54, 0.55, 0.57, 0.56, 0.6, 0.63, 0.62, ...
+       0.61, 0.55, 0.59, 0.58, 0.65, 0.67, 0.7, 0.72, 0.71, ...
+       0.7, 0.74, 0.75, 0.76, 0.77, 0.65, 0.66, 0.7, 0.74, ...
+       0.68, 0.72, 0.77, 0.75, 0.8, 0.78, 0.76, 0.8];
+
+% Objective function for fmincon: negative log-likelihood
+laterErrFcn = @(fits) -sum(log(normpdf(RTs, fits(1), fits(2))));
+
+% Initial guess for [muR, deltaS] based on summary stats (e.g., mean and std of 1/RT)
+initial_muR = mean(1 ./ RTs);  % Mean of reciprocal RTs
+initial_deltaS = std(1 ./ RTs); % Std deviation of reciprocal RTs
+initial_guess = [initial_muR, initial_deltaS];
+
+% Lower and upper bounds
+lowerBounds = [0.001, 0.001];  % Preventing zero values for muR and deltaS
+upperBounds = [1000, 1000];    % Arbitrary large bounds
+
+% Run the optimization using fmincon
+options = optimoptions('fmincon', 'Display', 'iter'); % To display progress
+
+[optimal_fits, fval, exitflag, output] = fmincon(laterErrFcn, initial_guess, [], [], [], [], lowerBounds, upperBounds, [], options);
+
+disp('Optimal fits (muR, deltaS):');
+disp(optimal_fits);
+disp('Negative log-likelihood value at optimal fit:');
+disp(fval);
+
+
+%% 4. Run the fits using GlobalSearch
+
+% Define the real data (Subject ID, Hazards, Stimulus) and corresponding reaction times (RTs)
+% Replace with actual RT values if available
+RTs = [0.4, 0.5, 0.55, 0.35, 0.45, 0.6, 0.4, 0.5, 0.55, ...
+       0.42, 0.5, 0.52, 0.33, 0.35, 0.37, 0.39, 0.43, 0.55, ...
+       0.49, 0.57, 0.61, 0.53, 0.51, 0.59, 0.6, 0.62, 0.4, ...
+       0.45, 0.43, 0.48, 0.46, 0.49, 0.47, 0.5, 0.48, 0.5, ...
+       0.47, 0.5, 0.54, 0.55, 0.57, 0.56, 0.6, 0.63, 0.62, ...
+       0.61, 0.55, 0.59, 0.58, 0.65, 0.67, 0.7, 0.72, 0.71, ...
+       0.7, 0.74, 0.75, 0.76, 0.77, 0.65, 0.66, 0.7, 0.74, ...
+       0.68, 0.72, 0.77, 0.75, 0.8, 0.78, 0.76, 0.8];
+
+% Objective function for GlobalSearch: negative log-likelihood
+laterErrFcn = @(fits) -sum(log(normpdf(RTs, fits(1), fits(2))));
+
+% Initial guess for [muR, deltaS]
+initial_muR = mean(1 ./ RTs);  % Mean of reciprocal RTs
+initial_deltaS = std(1 ./ RTs); % Std deviation of reciprocal RTs
+initialValues = [initial_muR, initial_deltaS];
+
+% Bounds for the parameters
+lowerBounds = [0.001, 0.001];  % Lower bounds
+upperBounds = [1000, 1000];    % Upper bounds
+
+% Set options for fmincon optimization
+opts = optimoptions(@fmincon, ...    % "function minimization with constraints"
+   'Algorithm',   'active-set',  ... % Use 'active-set' algorithm
+   'MaxIter',     3000,          ... % Maximum iterations
+   'MaxFunEvals', 3000);         % Maximum function evaluations
+
+% Define the optimization problem
+problem = createOptimProblem('fmincon', ...
+    'objective',   laterErrFcn,    ... % The objective function
+    'x0',          initialValues,  ... % Initial conditions
+    'lb',          lowerBounds,    ... % Lower bounds
+    'ub',          upperBounds,    ... % Upper bounds
+    'options',     opts);              % fmincon options
+
+% Create GlobalSearch object
+gs = GlobalSearch;
+
+% Run GlobalSearch
+[optimal_fits, nllk] = run(gs, problem);
+
+% Display results
+disp('Best-fitting parameter values (muR, deltaS):');
+disp(optimal_fits);
+disp('Negative log-likelihood at the best fit:');
+disp(nllk);
+
+
+%%  5. Evaluate the fits
+
+% Predicted RTs using the optimal parameters
+muR_opt = optimal_fits(1);   % Fitted muR
+deltaS_opt = optimal_fits(2); % Fitted deltaS
+
+% Predicted RTs are generated based on the normal distribution model
+% with mean muR and standard deviation deltaS.
+predicted_RTs = 1 ./ normrnd(muR_opt, deltaS_opt, size(RTs));
+
+% Plot actual vs. predicted RTs
+figure;
+scatter(1:length(RTs), RTs, 'b', 'DisplayName', 'Actual RTs');
+hold on;
+scatter(1:length(predicted_RTs), predicted_RTs, 'r', 'DisplayName', 'Predicted RTs');
+legend('show');
+xlabel('Trial');
+ylabel('Reaction Time (RT)');
+title('Actual vs Predicted Reaction Times');
+grid on;
+
+% Quantitative Evaluation: RMSE and R-squared
+
+% Root Mean Squared Error (RMSE)
+rmse = sqrt(mean((RTs - predicted_RTs).^2));
+disp(['Root Mean Squared Error (RMSE): ', num2str(rmse)]);
+
+% R-squared calculation
+SS_res = sum((RTs - predicted_RTs).^2);  % Residual sum of squares
+SS_tot = sum((RTs - mean(RTs)).^2);      % Total sum of squares
+R_squared = 1 - (SS_res / SS_tot);
+disp(['R-squared: ', num2str(R_squared)]);
+
+
+
+%   EXERCISE: How do you know if you got a reasonable answer?
+%   - Goodness of fit metrics (if the root mean squared error is in the same range as the RT values; if the R squared is close to 1) % 
+%   - Model diagnostics (residuals plot, histogram of predicted RTs vs actual RTs) 
+%   - Parameter sensibility (muR should be consistent with avg reaction time of the data set; deltaS should correspond to the variability of the data set)
